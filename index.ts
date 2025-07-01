@@ -1,5 +1,6 @@
 import fs from 'fs';
 import axios from 'axios';
+import { error } from 'console';
 
 const BASE_URL = 'https://www.castorama.pl';
 
@@ -38,16 +39,29 @@ const SESSION_ID = 'c58a8cd3-7003-4740-9fc0-039b581b4db4';
 //         ) as string[];
 // }
 
+type RequestResult = { data: any; error: string | null };
+
+type RequestFunction = (url: string) => Promise<RequestResult>;
+
 function createRequestInstance() {
-    return axios.create({
-        headers: {
-            Authorization: AUTH_HEADER
-        }
+    const instance = axios.create({
+        headers: { Authorization: AUTH_HEADER }
     });
+
+    const httpGetFn: RequestFunction = async url => {
+        try {
+            const { data } = await instance.get(url);
+            return { data, error: null };
+        } catch (error) {
+            return { data: null, error };
+        }
+    };
+
+    return { httpGetFn };
 }
 
 async function requestProductsFromCategory(
-    requestInstance: ReturnType<typeof createRequestInstance>,
+    httpGetFn: RequestFunction,
     categoryId: string,
     page: number = 1,
     pageSize: number = 1
@@ -62,21 +76,18 @@ async function requestProductsFromCategory(
     });
 
     const fullUrl = `${PRODUCT_REQUEST_URL}?${queryParams.toString()}`;
+    const { data, error } = await httpGetFn(fullUrl);
 
-    try {
-        const response = await requestInstance.get(fullUrl);
-        return response.data;
-    } catch (error: any) {
+    if (error) {
         console.error(
-            `Request for category ${categoryId} failed. Error: ${error.message}`
+            `Request for category ${categoryId} failed. Error: ${error}.`
         );
-        return null;
     }
+
+    return data;
 }
 
-async function getCategoryIds(
-    requestInstance: ReturnType<typeof createRequestInstance>
-) {
+async function getCategoryIds(httpGetFn: RequestFunction) {
     const maxMisses = 100;
     const minId = 2917;
     const maxId = 10000;
@@ -84,7 +95,7 @@ async function getCategoryIds(
     let misses = 0;
     for (let id = minId; id < maxId; id++) {
         const fullId = 'CAPL_' + id.toString().padStart(7, '0');
-        const data = await requestProductsFromCategory(requestInstance, fullId);
+        const data = await requestProductsFromCategory(httpGetFn, fullId);
 
         const isCategory = data?.meta?.isCategory;
         const url = data?.meta?.canonicalPath;
@@ -112,8 +123,8 @@ async function getCategoryIds(
 }
 
 async function scrape() {
-    const requestInstance = createRequestInstance();
-    await getCategoryIds(requestInstance);
+    const { httpGetFn } = createRequestInstance();
+    await getCategoryIds(httpGetFn);
 }
 
 scrape();
