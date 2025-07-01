@@ -1,0 +1,19 @@
+{
+  "name": "castorama-scrape",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@types/jsdom": "^21.1.7",
+    "axios": "^1.10.0",
+    "jsdom": "^26.1.0",
+    "playwright": "^1.53.2",
+    "tsx": "^4.20.3"
+  }
+}
