@@ -16,10 +16,11 @@ export type RequestResult = {
 export type RequestFunction = (url: string) => Promise<RequestResult>;
 
 export type Product = {
-    ean: string;
-    name: string;
-    category: string;
-    price: number;
+    ean?: string;
+    name?: string;
+    category?: string;
+    price?: number;
+    imageUrl?: string;
 };
 
 export type ProductCallback = (product: Product) => any | Promise<any>;

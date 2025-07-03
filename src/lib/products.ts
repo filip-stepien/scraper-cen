@@ -9,6 +9,16 @@ export async function insertOrUpdateProduct(
 ): Promise<ProductChangeStatus> {
     const now = new Date();
 
+    if (!product.ean) {
+        logger.error(
+            `Produkt ${
+                product.name ? `"${product.name}"` : '<brak nazwy produktu>'
+            } nie ma numeru EAN i nie może zostać zaktualizowany w bazie.`
+        );
+
+        return ProductChangeStatus.Error;
+    }
+
     try {
         const existing = await db
             .select()

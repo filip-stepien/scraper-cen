@@ -80,7 +80,8 @@ function createCategoryProductsIterator(
                     category: product?.attributes?.primaryCategoryName,
                     name: product?.attributes?.name,
                     price: product?.attributes?.pricing?.currentPrice
-                        ?.amountIncTax
+                        ?.amountIncTax,
+                    imageUrl: product?.attributes?.mediaObjects?.at(0)?.url
                 });
             }
 
