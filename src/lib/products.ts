@@ -1,75 +1,131 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { productsTable } from '../db/schema';
-import { Product, ProductChangeStatus } from '../types';
 import { db } from '../db/client';
+import { PagedProductsResponse, Product, ProductWithPrices } from '../types';
+import { findCompanyByName } from './companies';
+import { findPricesByProductEan } from './prices';
 import { logger } from './logger';
 
-export async function insertOrUpdateProduct(
-    product: Product
-): Promise<ProductChangeStatus> {
-    const now = new Date();
+export async function saveProduct(product: Product) {
+    const { ean, name, category, imageUrl, companyId, url } = product;
 
-    if (!product.ean) {
-        logger.error(
+    if (!ean) {
+        throw new Error(
             `Produkt ${
-                product.name ? `"${product.name}"` : '<brak nazwy produktu>'
+                name ? `"${name}"` : '<nie odczytano prawidłowej nazwy>'
             } nie ma numeru EAN i nie może zostać zaktualizowany w bazie.`
         );
-
-        return ProductChangeStatus.Error;
     }
 
-    try {
-        const existing = await db
-            .select()
-            .from(productsTable)
-            .where(eq(productsTable.ean, product.ean))
-            .limit(1);
+    const existing = await db
+        .select()
+        .from(productsTable)
+        .where(eq(productsTable.ean, ean))
+        .limit(1)
+        .get();
 
-        if (existing.length === 0) {
-            const newProduct: typeof productsTable.$inferInsert = {
-                ean: product.ean,
-                name: product.name,
-                category: product.category,
-                price: product.price,
-                previousPrice: null,
-                change_date: now
-            };
-
-            await db.insert(productsTable).values(newProduct);
-            logger.debug(`Dodano nowy produkt do bazy: "${product.name}".`);
-            return ProductChangeStatus.Added;
-        }
-
-        const oldProduct = existing[0];
-        const changed =
-            oldProduct.price !== product.price ||
-            oldProduct.name !== product.name ||
-            oldProduct.category !== product.category;
-
-        if (!changed) {
-            logger.debug(`Produkt "${product.name}" nie wymaga aktualizacji.`);
-            return ProductChangeStatus.Unchanged;
-        }
-
+    if (!existing) {
         await db
-            .update(productsTable)
-            .set({
-                price: product.price,
-                previousPrice: oldProduct.price,
-                name: product.name,
-                category: product.category,
-                change_date: now
+            .insert(productsTable)
+            .values({
+                ean,
+                category,
+                imageUrl,
+                url,
+                name,
+                companyId
             })
-            .where(eq(productsTable.id, oldProduct.id));
+            .run();
 
-        logger.debug(`Zaktualizowano produkt z bazy: "${product.name}".`);
-        return ProductChangeStatus.Updated;
-    } catch (error) {
-        logger.error(
-            `Błąd bazy danych przy operacji na produkcie "${product.name}". Błąd: ${error}`
-        );
-
-        return ProductChangeStatus.Error;
+        logger.debug(`Dodano "${name}" do bazy danych (ean: "${ean}").`);
+        return;
     }
+
+    const changed =
+        existing.category !== category ||
+        existing.name !== name ||
+        existing.imageUrl !== imageUrl ||
+        existing.url !== url;
+
+    if (!changed) {
+        return;
+    }
+
+    await db
+        .update(productsTable)
+        .set({
+            name,
+            category,
+            imageUrl,
+            url
+        })
+        .where(eq(productsTable.ean, ean))
+        .run();
+
+    logger.debug(`Zaktualizowano produkt "${name}" (ean: ${ean}).`);
+}
+
+export async function countProductsByCompany(
+    companyName: string
+): Promise<number> {
+    const company = await findCompanyByName(companyName);
+    if (!company) {
+        throw new Error(
+            `Błąd podczas pobierania ilości produktów firmy "${companyName}": firma nie istnieje w bazie danych.`
+        );
+    }
+
+    const result = await db
+        .select({ count: sql`count(*)` })
+        .from(productsTable)
+        .where(eq(productsTable.companyId, company.id))
+        .get();
+
+    return Number(result?.count ?? 0);
+}
+
+export async function findProductsByCompany(
+    companyName: string,
+    pageSize: number,
+    pageNumber: number
+): Promise<PagedProductsResponse> {
+    const company = await findCompanyByName(companyName);
+    if (!company) {
+        throw new Error(
+            `Błąd podczas pobierania produktów firmy "${companyName}": firma nie istnieje w bazie danych.`
+        );
+    }
+
+    if (pageSize < 1 || pageNumber < 1) {
+        throw new Error(
+            `Błąd podczas pobierania produktów firmy "${companyName}": parametry stronnicowania są nieprawidłowe.`
+        );
+    }
+
+    const offset = (pageNumber - 1) * pageSize;
+    const totalCount = await countProductsByCompany(companyName);
+    const products = await db
+        .select()
+        .from(productsTable)
+        .where(eq(productsTable.companyId, company.id))
+        .limit(pageSize)
+        .offset(offset)
+        .all();
+
+    const productsWithPrices: ProductWithPrices[] = await Promise.all(
+        products.map(async product => {
+            const prices = await findPricesByProductEan(product.ean);
+            return { ...product, prices };
+        })
+    );
+
+    const hasNextPage = pageNumber * pageSize < totalCount;
+
+    return {
+        products: productsWithPrices,
+        pageSize,
+        pageNumber,
+        totalCount,
+        hasNextPage
+    };
 }

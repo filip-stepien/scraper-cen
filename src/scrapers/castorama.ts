@@ -1,7 +1,7 @@
 import { RequestFunction, ProductCallback, ScrapeFunction } from '../types';
 import { createRequestInstance } from '../lib/request';
-import { getEnv } from '../lib/utils';
-import { logger } from '../lib/logger';
+import { getEnvString } from '../lib/utils';
+import { findCompanyByName } from '../lib/companies';
 
 async function requestProductsFromCategory(
     httpGetFn: RequestFunction,
@@ -15,10 +15,10 @@ async function requestProductsFromCategory(
         include: 'content',
         'page[number]': page.toString(),
         'page[size]': pageSize.toString(),
-        sessionId: getEnv('CASTORAMA_SESSION_ID')
+        sessionId: getEnvString('CASTORAMA_SESSION_ID')
     });
 
-    const requestUrl = getEnv('CASTORAMA_PRODUCT_REQUEST_URL');
+    const requestUrl = getEnvString('CASTORAMA_PRODUCT_REQUEST_URL');
     const fullUrl = `${requestUrl}?${queryParams.toString()}`;
     return httpGetFn(fullUrl);
 }
@@ -45,7 +45,7 @@ function createCategoriesIterator(httpGetFn: RequestFunction) {
                 await callback(fullId);
             } else {
                 if (error) {
-                    logger.error(
+                    throw new Error(
                         `Błąd podczas pobierania produktów kategorii "${fullId}". Status HTTP: ${error.status}.`
                     );
                 }
@@ -59,10 +59,19 @@ function createCategoriesIterator(httpGetFn: RequestFunction) {
     };
 }
 
-function createCategoryProductsIterator(
+async function createCategoryProductsIterator(
     httpGetFn: RequestFunction,
     categoryId: string
 ) {
+    const companyName = 'castorama';
+    const company = await findCompanyByName(companyName);
+
+    if (!company) {
+        throw new Error(
+            `Błąd przy tworzeniu iteratora: ${companyName} nie istnieje w bazie danych.`
+        );
+    }
+
     return async (callback: ProductCallback) => {
         let currentPage = 1;
         do {
@@ -75,14 +84,19 @@ function createCategoryProductsIterator(
             const productsData = products?.data?.data ?? [];
 
             for (const product of productsData) {
-                callback({
-                    ean: product?.attributes?.ean,
-                    category: product?.attributes?.primaryCategoryName,
-                    name: product?.attributes?.name,
-                    price: product?.attributes?.pricing?.currentPrice
-                        ?.amountIncTax,
-                    imageUrl: product?.attributes?.mediaObjects?.at(0)?.url
-                });
+                const attr = product?.attributes;
+
+                callback(
+                    {
+                        ean: attr?.ean ?? null,
+                        companyId: company.id,
+                        category: attr?.primaryCategoryName ?? null,
+                        name: attr?.name ?? null,
+                        imageUrl: attr?.mediaObjects?.at(0)?.url ?? null,
+                        url: attr?.url?.shareableUrl ?? null
+                    },
+                    attr?.pricing?.currentPrice?.amountIncTax
+                );
             }
 
             currentPage = products?.meta?.paging?.nextPage;
@@ -92,14 +106,14 @@ function createCategoryProductsIterator(
 
 export const getCastoramaScraper: ScrapeFunction = () => {
     const { httpGetFn } = createRequestInstance(
-        getEnv('CASTORAMA_AUTH_HEADER')
+        getEnvString('CASTORAMA_AUTH_HEADER')
     );
 
     const forEachCategory = createCategoriesIterator(httpGetFn);
 
     const forEachProduct = async (callback: ProductCallback) => {
         await forEachCategory(async categoryId => {
-            const forEachCategoryProduct = createCategoryProductsIterator(
+            const forEachCategoryProduct = await createCategoryProductsIterator(
                 httpGetFn,
                 categoryId
             );

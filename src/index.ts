@@ -1,31 +1,24 @@
 import 'dotenv/config';
 import { getCastoramaScraper } from './scrapers/castorama';
-import { insertOrUpdateProduct } from './lib/products';
-import { ProductChangeStatus } from './types';
+import { saveProduct } from './lib/products';
 import { logger } from './lib/logger';
+import { saveCompaniesFromConfig } from './lib/companies';
+import { companyScrapers } from './config/companyScrapers';
+import { savePrice } from './lib/prices';
 
 async function main() {
-    const castoramaScraper = getCastoramaScraper();
+    await saveCompaniesFromConfig(companyScrapers);
 
-    const stats: Record<ProductChangeStatus, number> = {
-        added: 0,
-        updated: 0,
-        unchanged: 0,
-        error: 0
-    };
+    const castoramaScraper = getCastoramaScraper();
 
     logger.info('Scrapowanie rozpoczęte.');
 
-    await castoramaScraper(async product => {
-        const result = await insertOrUpdateProduct(product);
-        stats[result]++;
+    await castoramaScraper(async (product, price) => {
+        await saveProduct(product);
+        await savePrice(product.ean, price);
     });
 
-    logger.info('Scrapowanie zakończone. Statystyki:');
-    logger.info(`Dodane: ${stats.added}`);
-    logger.info(`Zaktualizowane: ${stats.updated}`);
-    logger.info(`Niezmienione: ${stats.unchanged}`);
-    logger.info(`Błędy: ${stats.error}`);
+    logger.info('Scrapowanie zakończone.');
 }
 
 main();
