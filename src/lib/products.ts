@@ -1,10 +1,16 @@
 import { eq, sql } from 'drizzle-orm';
 import { productsTable } from '../db/schema';
-import { db } from '../db/client';
-import { PagedProductsResponse, Product, ProductWithPrices } from '../types';
+import { db } from '../db';
+import {
+    HttpStatus,
+    PagedProductsResponse,
+    Product,
+    ProductWithPrices
+} from '../types';
 import { findCompanyByName } from './companies';
 import { findPricesByProductEan } from './prices';
 import { logger } from './logger';
+import { ApiError } from '../errors/ApiError';
 
 export async function saveProduct(product: Product) {
     const { ean, name, category, imageUrl, companyId, url } = product;
@@ -91,14 +97,16 @@ export async function findProductsByCompany(
 ): Promise<PagedProductsResponse> {
     const company = await findCompanyByName(companyName);
     if (!company) {
-        throw new Error(
-            `Błąd podczas pobierania produktów firmy "${companyName}": firma nie istnieje w bazie danych.`
+        throw new ApiError(
+            `Podana firma nie istnieje w bazie danych.`,
+            HttpStatus.BAD_REQUEST
         );
     }
 
     if (pageSize < 1 || pageNumber < 1) {
-        throw new Error(
-            `Błąd podczas pobierania produktów firmy "${companyName}": parametry stronnicowania są nieprawidłowe.`
+        throw new ApiError(
+            `Parametry stronnicowania są nieprawidłowe.`,
+            HttpStatus.BAD_REQUEST
         );
     }
 

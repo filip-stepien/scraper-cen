@@ -1,7 +1,10 @@
 import { RequestFunction, ProductCallback, ScrapeFunction } from '../types';
 import { createRequestInstance } from '../lib/request';
-import { getEnvString } from '../lib/utils';
 import { findCompanyByName } from '../lib/companies';
+import { getConfig } from '../lib/config';
+
+const { productRequestUrl, authHeader, sessionId } =
+    getConfig().companies.castorama;
 
 async function requestProductsFromCategory(
     httpGetFn: RequestFunction,
@@ -15,11 +18,10 @@ async function requestProductsFromCategory(
         include: 'content',
         'page[number]': page.toString(),
         'page[size]': pageSize.toString(),
-        sessionId: getEnvString('CASTORAMA_SESSION_ID')
+        sessionId
     });
 
-    const requestUrl = getEnvString('CASTORAMA_PRODUCT_REQUEST_URL');
-    const fullUrl = `${requestUrl}?${queryParams.toString()}`;
+    const fullUrl = `${productRequestUrl}?${queryParams.toString()}`;
     return httpGetFn(fullUrl);
 }
 
@@ -105,12 +107,8 @@ async function createCategoryProductsIterator(
 }
 
 export const getCastoramaScraper: ScrapeFunction = () => {
-    const { httpGetFn } = createRequestInstance(
-        getEnvString('CASTORAMA_AUTH_HEADER')
-    );
-
+    const { httpGetFn } = createRequestInstance(authHeader);
     const forEachCategory = createCategoriesIterator(httpGetFn);
-
     const forEachProduct = async (callback: ProductCallback) => {
         await forEachCategory(async categoryId => {
             const forEachCategoryProduct = await createCategoryProductsIterator(

@@ -1,0 +1,32 @@
+{
+    "website": {
+        "port": 3000,
+        "authorization": {
+            "enabled": true,
+            "username": "admin",
+            "passwordHash": "$2a$12$1O7u7rg3A6fKyNi4mfaT4OLz3O4NKTAhdhHKJLfX7afvoFMnSCV9m"
+        },
+        "session": {
+            "secret": "secret",
+            "cookieName": "sid",
+            "durationSeconds": 10
+        }
+    },
+    "db": {
+        "fileName": "products.db",
+        "maxPricesCount": 10
+    },
+    "companies": {
+        "castorama": {
+            "productRequestUrl": "https://api.kingfisher.com/prod/v1/product-search-bff/products/CAPL",
+            "authHeader": "Atmosphere atmosphere_app_id=kingfisher-EPgbIZbIpBzipu0bKltAFm1xler30LKmaF4vJH96",
+            "sessionId": "c58a8cd3-7003-4740-9fc0-039b581b4db4"
+        }
+    },
+    "notifications": {
+        "telegram": {
+            "botToken": "",
+            "chatIds": []
+        }
+    }
+}

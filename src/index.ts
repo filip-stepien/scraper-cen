@@ -2,12 +2,14 @@ import 'dotenv/config';
 import { getCastoramaScraper } from './scrapers/castorama';
 import { saveProduct } from './lib/products';
 import { logger } from './lib/logger';
-import { saveCompaniesFromConfig } from './lib/companies';
-import { companyScrapers } from './config/companyScrapers';
+import { saveCompany } from './lib/companies';
+import { scrapers } from './scrapers';
 import { savePrice } from './lib/prices';
 
 async function main() {
-    await saveCompaniesFromConfig(companyScrapers);
+    await Promise.all(
+        scrapers.map(({ companyName }) => saveCompany(companyName))
+    );
 
     const castoramaScraper = getCastoramaScraper();
 

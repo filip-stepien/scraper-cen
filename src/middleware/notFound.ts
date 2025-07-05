@@ -1,11 +1,6 @@
-import { Request, Response } from 'express';
-import { ErrorResponse } from '../types';
+import { ApiError } from '../errors/ApiError';
+import { HttpStatus } from '../types';
 
-export async function notFound(_req: Request, res: Response) {
-    const error: ErrorResponse = {
-        error: true,
-        message: 'Nie znaleziono zasobu'
-    };
-
-    res.status(404).json(error);
+export async function notFound() {
+    throw new ApiError('Nie znaleziono podanego zasobu.', HttpStatus.NOT_FOUND);
 }

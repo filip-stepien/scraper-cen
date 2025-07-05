@@ -1,17 +1,17 @@
 import dayjs from 'dayjs';
 import { eq, desc, asc, inArray } from 'drizzle-orm';
-import { db } from '../db/client';
+import { db } from '../db';
 import { pricesTable } from '../db/schema';
 import { PriceHistory } from '../types';
 import { logger } from './logger';
-import { getEnvNumber } from './utils';
+import { getConfig } from './config';
 
 export async function savePrice(ean: string | null, price: number | null) {
     if (!ean || !price) {
         return;
     }
 
-    const maxPricesCount = getEnvNumber('DB_MAX_PRICES_COUNT');
+    const maxPricesCount = getConfig().db.maxPricesCount;
     const lastPrice = await db
         .select()
         .from(pricesTable)

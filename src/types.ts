@@ -1,3 +1,5 @@
+import { CookieOptions } from 'express';
+
 export type LoggerLogFunction = (...msg: string[]) => any;
 
 export type Company = {
@@ -55,12 +57,59 @@ export type ScrapeFunction = () => (
     callback: ProductCallback
 ) => any | Promise<any>;
 
-export type CompanyScrapersConfig = {
-    companyName: string;
-    scraper: ScrapeFunction;
-}[];
-
 export type ErrorResponse = {
     error: true;
     message: string;
+};
+
+export enum HttpStatus {
+    OK = 200,
+    BAD_REQUEST = 400,
+    UNAUTHORIZED = 401,
+    NOT_FOUND = 404,
+    INTERNAL_SERVER_ERROR = 500
+}
+
+export type Cookie = {
+    name: string;
+    value: string;
+    options: CookieOptions;
+};
+
+export type CompanyScraper = {
+    companyName: string;
+    scraper: ScrapeFunction;
+};
+
+export type Config = {
+    website: {
+        port: number;
+        authorization: {
+            enabled: boolean;
+            username: string;
+            passwordHash: string;
+        };
+        session: {
+            secret: string;
+            cookieName: string;
+            durationSeconds: number;
+        };
+    };
+    db: {
+        fileName: string;
+        maxPricesCount: number;
+    };
+    companies: {
+        castorama: {
+            productRequestUrl: string;
+            authHeader: string;
+            sessionId: string;
+        };
+    };
+    notifications: {
+        telegram: {
+            botToken: string;
+            chatIds: string[];
+        };
+    };
 };

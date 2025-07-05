@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
-import { db } from '../db/client';
+import { db } from '../db';
 import { companiesTable } from '../db/schema';
-import { Company, CompanyScrapersConfig } from '../types';
+import { Company, CompanyScraper } from '../types';
 
 export async function findCompanyByName(
     companyName: string
@@ -20,8 +20,4 @@ export async function saveCompany(companyName: string) {
     if (!exists) {
         await db.insert(companiesTable).values({ name: companyName }).run();
     }
-}
-
-export async function saveCompaniesFromConfig(config: CompanyScrapersConfig) {
-    await Promise.all(config.map(entry => saveCompany(entry.companyName)));
 }
