@@ -1,4 +1,4 @@
-import { RequestFunction, ProductCallback, ScrapeFunction } from '../types';
+import { RequestFunction, ProductCallback, ScraperFactory } from '../types';
 import { createRequestInstance } from '../lib/request';
 import { findCompanyByName } from '../lib/companies';
 import { getConfig } from '../lib/config';
@@ -106,7 +106,7 @@ async function createCategoryProductsIterator(
     };
 }
 
-export const getCastoramaScraper: ScrapeFunction = () => {
+export const getCastoramaScraper: ScraperFactory = () => {
     const { httpGetFn } = createRequestInstance(authHeader);
     const forEachCategory = createCategoriesIterator(httpGetFn);
     const forEachProduct = async (callback: ProductCallback) => {

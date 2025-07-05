@@ -6,31 +6,41 @@ import { listProducts } from './controllers/products';
 import { notFound } from './middleware/notFound';
 import { checkAuth } from './middleware/checkAuth';
 import { getConfig } from './lib/config';
-import cookieParser from 'cookie-parser';
 import { signIn, signOut } from './controllers/auth';
+import { scheduleScrape } from './lib/scrape';
+import { registerEventListeners } from './lib/events';
+import cookieParser from 'cookie-parser';
 
-const { port } = getConfig().website;
-const app = express();
+async function startServer() {
+    const { port } = getConfig().website;
+    const app = express();
 
-app.use(express.json());
+    app.use(express.json());
+    app.use(cookieParser());
 
-app.use(cookieParser());
+    app.post('/signIn', signIn);
+    app.post('/signOut', checkAuth, signOut);
+    app.get('/products/:company', checkAuth, listProducts);
 
-app.post('/signIn', signIn);
+    app.use(notFound);
+    app.use(globalErrorHandler);
 
-app.post('/signOut', checkAuth, signOut);
+    await registerEventListeners();
 
-app.get('/products/:company', checkAuth, listProducts);
+    scheduleScrape();
 
-app.use(notFound);
+    app.listen(port, error => {
+        if (error) {
+            throw new Error(
+                `Błąd przy uruchamianiu serwera HTTP: ${error.message}`
+            );
+        } else {
+            logger.info(`Serwer HTTP uruchomiony na porcie ${port}.`);
+        }
+    });
+}
 
-app.use(globalErrorHandler);
-
-app.listen(port, error => {
-    if (error) {
-        logger.fatal(`Błąd przy uruchamianiu serwera HTTP: ${error.message}`);
-        process.exit(1);
-    } else {
-        logger.info(`Serwer HTTP uruchomiony na porcie ${port}.`);
-    }
+startServer().catch(err => {
+    logger.fatal(err instanceof Error ? err.message : err);
+    process.exit(1);
 });

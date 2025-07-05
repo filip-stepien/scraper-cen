@@ -53,13 +53,51 @@ export type ProductCallback = (
     price: number | null
 ) => any | Promise<any>;
 
-export type ScrapeFunction = () => (
+export type ScraperFactory = () => (
     callback: ProductCallback
 ) => any | Promise<any>;
+
+export type NotificatorRegister = () => Promise<void> | void;
+
+export type NotificatorNotify = (
+    productStats: ProductStat[],
+    priceStats: PriceStat[]
+) => Promise<void> | void;
+
+export type Notificator = {
+    providerName: string;
+    register: NotificatorRegister;
+    notify: NotificatorNotify;
+};
+
+export type StateSubscriber = {
+    subscriberName: string;
+};
 
 export type ErrorResponse = {
     error: true;
     message: string;
+};
+
+export enum ProductStatus {
+    UPDATED = 'updated',
+    UNCHANGED = 'unchanged',
+    CREATED = 'created'
+}
+
+export enum PriceStatus {
+    UNCHANGED = 'unchanged',
+    CREATED = 'created'
+}
+
+export type ProductStat = {
+    companyName: string;
+    stats: Record<ProductStatus, number>;
+};
+
+export type PriceStat = {
+    companyName: string;
+    stats: Record<PriceStatus, number>;
 };
 
 export enum HttpStatus {
@@ -78,7 +116,25 @@ export type Cookie = {
 
 export type CompanyScraper = {
     companyName: string;
-    scraper: ScrapeFunction;
+    scraperFactory: ScraperFactory;
+};
+
+export type ScraperState =
+    | { status: 'idle' }
+    | { status: 'scraping'; source: string };
+
+export type AppEvents = {
+    onScrapeStart?: (companyName: string) => void | Promise<void>;
+    onScrapeEnd?: (
+        productStats: ProductStat[],
+        priceStats: PriceStat[]
+    ) => void | Promise<void>;
+};
+
+export type EventListener = {
+    listenerName: string;
+    register?: () => void | Promise<void>;
+    events?: AppEvents;
 };
 
 export type Config = {
@@ -94,6 +150,11 @@ export type Config = {
             cookieName: string;
             durationSeconds: number;
         };
+    };
+    scrape: {
+        cron: '0 0 * * *';
+        notifyOnFinish: true;
+        notifyWhenUnchanged: false;
     };
     db: {
         fileName: string;

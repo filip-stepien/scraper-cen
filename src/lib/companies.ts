@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import { companiesTable } from '../db/schema';
-import { Company, CompanyScraper } from '../types';
+import { Company } from '../types';
 
 export async function findCompanyByName(
     companyName: string

@@ -2,7 +2,7 @@
     "website": {
         "port": 3000,
         "authorization": {
-            "enabled": true,
+            "enabled": false,
             "username": "admin",
             "passwordHash": "$2a$12$1O7u7rg3A6fKyNi4mfaT4OLz3O4NKTAhdhHKJLfX7afvoFMnSCV9m"
         },
@@ -15,6 +15,11 @@
     "db": {
         "fileName": "products.db",
         "maxPricesCount": 10
+    },
+    "scrape": {
+        "cron": "*/10 * * * * *",
+        "notifyOnFinish": true,
+        "notifyWhenUnchanged": true
     },
     "companies": {
         "castorama": {

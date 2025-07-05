@@ -5,14 +5,15 @@ import {
     HttpStatus,
     PagedProductsResponse,
     Product,
-    ProductWithPrices
+    ProductWithPrices,
+    ProductStatus
 } from '../types';
 import { findCompanyByName } from './companies';
 import { findPricesByProductEan } from './prices';
 import { logger } from './logger';
 import { ApiError } from '../errors/ApiError';
 
-export async function saveProduct(product: Product) {
+export async function saveProduct(product: Product): Promise<ProductStatus> {
     const { ean, name, category, imageUrl, companyId, url } = product;
 
     if (!ean) {
@@ -44,7 +45,7 @@ export async function saveProduct(product: Product) {
             .run();
 
         logger.debug(`Dodano "${name}" do bazy danych (ean: "${ean}").`);
-        return;
+        return ProductStatus.CREATED;
     }
 
     const changed =
@@ -54,7 +55,7 @@ export async function saveProduct(product: Product) {
         existing.url !== url;
 
     if (!changed) {
-        return;
+        return ProductStatus.UNCHANGED;
     }
 
     await db
@@ -69,6 +70,7 @@ export async function saveProduct(product: Product) {
         .run();
 
     logger.debug(`Zaktualizowano produkt "${name}" (ean: ${ean}).`);
+    return ProductStatus.UPDATED;
 }
 
 export async function countProductsByCompany(

@@ -2,13 +2,16 @@ import dayjs from 'dayjs';
 import { eq, desc, asc, inArray } from 'drizzle-orm';
 import { db } from '../db';
 import { pricesTable } from '../db/schema';
-import { PriceHistory } from '../types';
+import { PriceHistory, PriceStatus } from '../types';
 import { logger } from './logger';
 import { getConfig } from './config';
 
-export async function savePrice(ean: string | null, price: number | null) {
+export async function savePrice(
+    ean: string | null,
+    price: number | null
+): Promise<PriceStatus> {
     if (!ean || !price) {
-        return;
+        return PriceStatus.UNCHANGED;
     }
 
     const maxPricesCount = getConfig().db.maxPricesCount;
@@ -21,7 +24,7 @@ export async function savePrice(ean: string | null, price: number | null) {
         .get();
 
     if (lastPrice && lastPrice.price === price) {
-        return;
+        return PriceStatus.UNCHANGED;
     }
 
     const now = new Date();
@@ -57,6 +60,7 @@ export async function savePrice(ean: string | null, price: number | null) {
     }
 
     logger.debug(`Dodano nową cenę ${price} dla produktu (ean: ${ean}).`);
+    return PriceStatus.CREATED;
 }
 
 export async function findPricesByProductEan(

@@ -4,6 +4,6 @@ import { CompanyScraper } from '../types';
 export const scrapers: CompanyScraper[] = [
     {
         companyName: 'castorama',
-        scraper: getCastoramaScraper
+        scraperFactory: getCastoramaScraper
     }
 ];
