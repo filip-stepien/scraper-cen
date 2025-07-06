@@ -10,6 +10,9 @@ import { signIn, signOut } from './controllers/auth';
 import { scheduleScrape } from './lib/scrape';
 import { registerEventListeners } from './lib/events';
 import cookieParser from 'cookie-parser';
+import { ping } from './controllers/status';
+import { authRoutes } from './routes/auth';
+import { productRoutes } from './routes/products';
 
 async function startServer() {
     const { port } = getConfig().website;
@@ -17,17 +20,14 @@ async function startServer() {
 
     app.use(express.json());
     app.use(cookieParser());
-
-    app.post('/signIn', signIn);
-    app.post('/signOut', checkAuth, signOut);
-    app.get('/products/:company', checkAuth, listProducts);
-
+    app.use(authRoutes);
+    app.use(productRoutes);
     app.use(notFound);
     app.use(globalErrorHandler);
 
     await registerEventListeners();
 
-    scheduleScrape();
+    //scheduleScrape();
 
     app.listen(port, error => {
         if (error) {

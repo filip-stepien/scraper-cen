@@ -5,15 +5,13 @@ import { ApiError } from '../errors/ApiError';
 import { Cookie, HttpStatus } from '../types';
 import jwt from 'jsonwebtoken';
 
-export function credentialsValid(username?: string, password?: string) {
-    if (!username || !password) {
+export function credentialsValid(password?: string) {
+    if (!password) {
         return false;
     }
 
     const config = getConfig().website.authorization;
-    const usernameValid = username === config.username;
-    const passwordValid = bcrypt.compareSync(password, config.passwordHash);
-    return usernameValid && passwordValid;
+    return bcrypt.compareSync(password, config.passwordHash);
 }
 
 export function changeUsername(newUsername: string) {
@@ -35,8 +33,8 @@ export function changePassword(newPassword: string) {
     logger.info('Zmieniono hasło.');
 }
 
-export function createAuthCookie(username: string, password: string): Cookie {
-    if (!credentialsValid(username, password)) {
+export function createAuthCookie(password: string): Cookie {
+    if (!credentialsValid(password)) {
         throw new ApiError(
             'Nieprawidłowe dane autoryzacji.',
             HttpStatus.UNAUTHORIZED
@@ -46,7 +44,7 @@ export function createAuthCookie(username: string, password: string): Cookie {
     const { cookieName, durationSeconds, secret } = getConfig().website.session;
     const cookieAgeMs = durationSeconds * 1000;
 
-    const token = jwt.sign({ username }, secret, {
+    const token = jwt.sign({}, secret, {
         expiresIn: durationSeconds
     });
 

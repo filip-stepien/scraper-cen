@@ -3,9 +3,8 @@ import { HttpStatus } from '../types';
 import { clearAuthCookie, createAuthCookie } from '../lib/auth';
 
 export function signIn(req: Request, res: Response) {
-    const username = req.body?.username;
     const password = req.body?.password;
-    const { name, value, options } = createAuthCookie(username, password);
+    const { name, value, options } = createAuthCookie(password);
     res.status(HttpStatus.OK).cookie(name, value, options).end();
 }
 
