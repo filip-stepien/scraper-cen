@@ -2,13 +2,13 @@
     "website": {
         "port": 3000,
         "authorization": {
-            "enabled": true,
+            "enabled": false,
             "passwordHash": "$2a$12$1O7u7rg3A6fKyNi4mfaT4OLz3O4NKTAhdhHKJLfX7afvoFMnSCV9m"
         },
         "session": {
             "secret": "secret",
             "cookieName": "sid",
-            "durationSeconds": 10
+            "durationSeconds": 3600
         }
     },
     "db": {
@@ -16,7 +16,8 @@
         "maxPricesCount": 10
     },
     "scrape": {
-        "cron": "*/10 * * * * *",
+        "cron": "0 * * * *",
+        "runOnAppStart": true,
         "notifyOnFinish": true,
         "notifyWhenUnchanged": true
     },

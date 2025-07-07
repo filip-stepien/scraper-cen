@@ -101,7 +101,7 @@ export async function findProductsByCompany(
     if (!company) {
         throw new ApiError(
             `Podana firma nie istnieje w bazie danych.`,
-            HttpStatus.BAD_REQUEST
+            HttpStatus.NOT_FOUND
         );
     }
 

@@ -6,6 +6,8 @@ import { isValidCron } from 'cron-validator';
 import cron from 'node-cron';
 import cronstrue from 'cronstrue/i18n';
 import { notifyScrapeEnd, notifyScrapeStart } from './events';
+import { savePrice } from './prices';
+import { saveProduct } from './products';
 
 let scraperState: ScraperState = { status: 'idle' };
 
@@ -49,31 +51,27 @@ async function scrape() {
 
         await notifyScrapeStart(companyName);
 
-        logger.debug(
-            `Rozpoczęto pobieranie danych ze strony "${companyName}".`
-        );
+        logger.info(`Rozpoczęto pobieranie danych ze strony "${companyName}".`);
 
-        // await scrape(async (product, price) => {
-        //     const productStatus = await saveProduct(product);
-        //     const priceStatus = await savePrice(product.ean, price);
+        await scrape(async (product, price) => {
+            const productStatus = await saveProduct(product);
+            const priceStatus = await savePrice(product.ean, price);
 
-        //     productStat.stats[productStatus]++;
-        //     priceStat.stats[priceStatus]++;
-        // });
+            productStat.stats[productStatus]++;
+            priceStat.stats[priceStatus]++;
+        });
 
         await new Promise(r => setTimeout(r, 10000));
 
-        logger.debug(
-            `Zakończono pobieranie danych ze strony "${companyName}".`
-        );
-        logger.debug(
+        logger.info(`Zakończono pobieranie danych ze strony "${companyName}".`);
+        logger.info(
             `Statystyki produktów dla "${companyName}": ` +
                 `\n- dodane: ${productStat.stats.created}, ` +
                 `\n- zmienione: ${productStat.stats.updated}, ` +
                 `\n- bez zmian: ${productStat.stats.unchanged}`
         );
 
-        logger.debug(
+        logger.info(
             `Statystyki cen dla "${companyName}": ` +
                 `\n- dodane: ${priceStat.stats.created}, ` +
                 `\n- bez zmian: ${priceStat.stats.unchanged}`
@@ -87,12 +85,15 @@ async function scrape() {
 }
 
 export function scheduleScrape() {
-    const cronSchedule = getConfig().scrape.cron;
-    if (!isValidCron(cronSchedule, { seconds: true })) {
+    const config = getConfig().scrape;
+    const cronSchedule = config.cron;
+    const runOnAppStart = config.runOnAppStart;
+
+    if (!isValidCron(cronSchedule, { seconds: false })) {
         throw new Error(`Harmonogram "${cronSchedule}" jest nieprawidłowy.`);
     }
 
-    cron.schedule(cronSchedule, () => {
+    const runScrape = () => {
         if (scraperState.status === 'idle') {
             scrape();
         } else {
@@ -100,7 +101,13 @@ export function scheduleScrape() {
                 'Pominięto wykonanie zadania z harmonogramu - pobieranie danych nadal trwa!'
             );
         }
-    });
+    };
+
+    if (runOnAppStart) {
+        runScrape();
+    }
+
+    cron.schedule(cronSchedule, runScrape);
 
     const cronHumanReadable = cronstrue
         .toString(cronSchedule, {

@@ -1,7 +1,7 @@
 import pino from 'pino';
 import { Logger } from '../types';
 
-const instance = pino({ level: 'debug' });
+const instance = pino({ level: 'info' });
 
 export const logger: Logger = {
     debug: instance.debug.bind(instance),

@@ -13,6 +13,7 @@ import cookieParser from 'cookie-parser';
 import { ping } from './controllers/status';
 import { authRoutes } from './routes/auth';
 import { productRoutes } from './routes/products';
+import { registerCompanies } from './lib/companies';
 
 async function startServer() {
     const { port } = getConfig().website;
@@ -25,10 +26,6 @@ async function startServer() {
     app.use(notFound);
     app.use(globalErrorHandler);
 
-    await registerEventListeners();
-
-    //scheduleScrape();
-
     app.listen(port, error => {
         if (error) {
             throw new Error(
@@ -38,6 +35,10 @@ async function startServer() {
             logger.info(`Serwer HTTP uruchomiony na porcie ${port}.`);
         }
     });
+
+    await registerCompanies();
+    await registerEventListeners();
+    //scheduleScrape();
 }
 
 startServer().catch(err => {

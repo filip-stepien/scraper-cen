@@ -153,6 +153,7 @@ export type Config = {
     };
     scrape: {
         cron: '0 0 * * *';
+        runOnAppStart: boolean;
         notifyOnFinish: true;
         notifyWhenUnchanged: false;
     };
