@@ -1,5 +1,15 @@
 import { CookieOptions } from 'express';
 
+export type RequestParamEntry = {
+    key: string;
+    value: string;
+};
+
+export type FilteringOption = {
+    field: string;
+    query: string;
+};
+
 export type LoggerLogFunction = (...msg: string[]) => any;
 
 export type Company = {
@@ -22,6 +32,8 @@ export type PriceHistory = {
 };
 
 export type ProductWithPrices = Product & {
+    price: number | null;
+    changedAt: number | null;
     prices: PriceHistory[];
 };
 
