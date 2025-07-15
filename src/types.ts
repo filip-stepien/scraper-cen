@@ -166,8 +166,7 @@ export type Config = {
     scrape: {
         cron: '0 0 * * *';
         runOnAppStart: boolean;
-        notifyOnFinish: true;
-        notifyWhenUnchanged: false;
+        scheduleOnAppStart: boolean;
     };
     db: {
         fileName: string;
@@ -178,12 +177,6 @@ export type Config = {
             productRequestUrl: string;
             authHeader: string;
             sessionId: string;
-        };
-    };
-    notifications: {
-        telegram: {
-            botToken: string;
-            chatIds: string[];
         };
     };
 };

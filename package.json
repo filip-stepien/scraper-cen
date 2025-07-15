@@ -7,7 +7,7 @@
     "type": "commonjs",
     "main": "index.js",
     "scripts": {
-        "start": "tsx src/server.ts | pino-pretty",
+        "start": "npm run db && tsx src/server.ts | pino-pretty",
         "db": "npx drizzle-kit push"
     },
     "dependencies": {

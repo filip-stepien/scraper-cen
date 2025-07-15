@@ -38,7 +38,7 @@ async function startServer() {
 
     await registerCompanies();
     await registerEventListeners();
-    //scheduleScrape();
+    scheduleScrape();
 }
 
 startServer().catch(err => {

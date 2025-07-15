@@ -88,6 +88,7 @@ export function scheduleScrape() {
     const config = getConfig().scrape;
     const cronSchedule = config.cron;
     const runOnAppStart = config.runOnAppStart;
+    const scheduleOnAppStart = config.scheduleOnAppStart;
 
     if (!isValidCron(cronSchedule, { seconds: false })) {
         throw new Error(`Harmonogram "${cronSchedule}" jest nieprawidłowy.`);
@@ -107,15 +108,21 @@ export function scheduleScrape() {
         runScrape();
     }
 
-    cron.schedule(cronSchedule, runScrape);
+    if (scheduleOnAppStart) {
+        cron.schedule(cronSchedule, runScrape);
 
-    const cronHumanReadable = cronstrue
-        .toString(cronSchedule, {
-            locale: 'pl'
-        })
-        .toLowerCase();
+        const cronHumanReadable = cronstrue
+            .toString(cronSchedule, {
+                locale: 'pl'
+            })
+            .toLowerCase();
 
-    logger.info(
-        `Zarejestrowano proces pobierania danych z harmonogramem: "${cronHumanReadable}".`
-    );
+        logger.info(
+            `Zarejestrowano proces pobierania danych z harmonogramem: "${cronHumanReadable}".`
+        );
+    } else {
+        logger.warn(
+            `Harmonogram pobierania danych został wyłączony zgodnie z konfiguracją.`
+        );
+    }
 }

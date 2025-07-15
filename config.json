@@ -16,22 +16,15 @@
         "maxPricesCount": 10
     },
     "scrape": {
-        "cron": "0 * * * *",
-        "runOnAppStart": true,
-        "notifyOnFinish": true,
-        "notifyWhenUnchanged": true
+        "cron": "0 */6 * * *",
+        "runOnAppStart": false,
+        "scheduleOnAppStart": false
     },
     "companies": {
         "castorama": {
             "productRequestUrl": "https://api.kingfisher.com/prod/v1/product-search-bff/products/CAPL",
             "authHeader": "Atmosphere atmosphere_app_id=kingfisher-EPgbIZbIpBzipu0bKltAFm1xler30LKmaF4vJH96",
             "sessionId": "c58a8cd3-7003-4740-9fc0-039b581b4db4"
-        }
-    },
-    "notifications": {
-        "telegram": {
-            "botToken": "",
-            "chatIds": []
         }
     }
 }
