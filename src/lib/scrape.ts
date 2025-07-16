@@ -61,8 +61,6 @@ async function scrape() {
             priceStat.stats[priceStatus]++;
         });
 
-        await new Promise(r => setTimeout(r, 10000));
-
         logger.info(`Zakończono pobieranie danych ze strony "${companyName}".`);
         logger.info(
             `Statystyki produktów dla "${companyName}": ` +
