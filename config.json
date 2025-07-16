@@ -1,6 +1,6 @@
 {
     "website": {
-        "port": 80,
+        "port": 3000,
         "authorization": {
             "enabled": true,
             "passwordHash": "$2a$12$1O7u7rg3A6fKyNi4mfaT4OLz3O4NKTAhdhHKJLfX7afvoFMnSCV9m"
