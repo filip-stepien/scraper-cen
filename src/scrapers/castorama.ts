@@ -2,6 +2,7 @@ import { RequestFunction, ProductCallback, ScraperFactory } from '../types';
 import { createRequestInstance } from '../lib/request';
 import { findCompanyByName } from '../lib/companies';
 import { getConfig } from '../lib/config';
+import { logger } from '../lib/logger';
 
 const { productRequestUrl, authHeader, sessionId } =
     getConfig().companies.castorama;
@@ -47,7 +48,7 @@ function createCategoriesIterator(httpGetFn: RequestFunction) {
                 await callback(fullId);
             } else {
                 if (error) {
-                    throw new Error(
+                    logger.warn(
                         `Błąd podczas pobierania produktów kategorii "${fullId}". Status HTTP: ${error.status}.`
                     );
                 }

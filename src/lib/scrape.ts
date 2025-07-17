@@ -56,7 +56,6 @@ async function scrape() {
         await scrape(async (product, price) => {
             const productStatus = await saveProduct(product);
             const priceStatus = await savePrice(product.ean, price);
-
             productStat.stats[productStatus]++;
             priceStat.stats[priceStatus]++;
         });
@@ -82,7 +81,7 @@ async function scrape() {
     await notifyScrapeEnd(productStats, priceStats);
 }
 
-export function scheduleScrape() {
+export async function scheduleScrape() {
     const config = getConfig().scrape;
     const cronSchedule = config.cron;
     const runOnAppStart = config.runOnAppStart;
@@ -92,9 +91,9 @@ export function scheduleScrape() {
         throw new Error(`Harmonogram "${cronSchedule}" jest nieprawidłowy.`);
     }
 
-    const runScrape = () => {
+    const runScrape = async () => {
         if (scraperState.status === 'idle') {
-            scrape();
+            await scrape();
         } else {
             logger.warn(
                 'Pominięto wykonanie zadania z harmonogramu - pobieranie danych nadal trwa!'
@@ -103,7 +102,7 @@ export function scheduleScrape() {
     };
 
     if (runOnAppStart) {
-        runScrape();
+        await runScrape();
     }
 
     if (scheduleOnAppStart) {

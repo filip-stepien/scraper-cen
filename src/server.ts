@@ -39,9 +39,9 @@ async function startServer() {
     try {
         await registerCompanies();
         await registerEventListeners();
-        scheduleScrape();
+        await scheduleScrape();
     } catch (e) {
-        console.warn(e);
+        logger.warn(e);
     }
 }
 

@@ -17,7 +17,7 @@
     },
     "scrape": {
         "cron": "0 */6 * * *",
-        "runOnAppStart": false,
+        "runOnAppStart": true,
         "scheduleOnAppStart": false
     },
     "companies": {
