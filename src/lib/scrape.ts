@@ -101,7 +101,9 @@ export function scheduleScrape() {
                 );
             }
         } catch (e) {
-            logger.error(e);
+            logger.error(
+                `Pobieranie danych zostało zatrzymane przez wystąpienie nieoczekiwanego błędu: ${e}`
+            );
         }
     };
 

@@ -112,11 +112,13 @@ export const getCastoramaScraper: ScraperFactory = () => {
     const forEachCategory = createCategoriesIterator(httpGetFn);
     const forEachProduct = async (callback: ProductCallback) => {
         await forEachCategory(async categoryId => {
-            const forEachCategoryProduct = await createCategoryProductsIterator(
-                httpGetFn,
-                categoryId
-            );
-            await forEachCategoryProduct(callback);
+            try {
+                const forEachCategoryProduct =
+                    await createCategoryProductsIterator(httpGetFn, categoryId);
+                await forEachCategoryProduct(callback);
+            } catch (e) {
+                logger.error(e);
+            }
         });
     };
 
