@@ -36,13 +36,9 @@ async function startServer() {
         }
     });
 
-    try {
-        await registerCompanies();
-        await registerEventListeners();
-        await scheduleScrape();
-    } catch (e) {
-        logger.warn(e);
-    }
+    await registerCompanies();
+    await registerEventListeners();
+    scheduleScrape();
 }
 
 startServer().catch(err => {

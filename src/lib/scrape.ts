@@ -81,7 +81,7 @@ async function scrape() {
     await notifyScrapeEnd(productStats, priceStats);
 }
 
-export async function scheduleScrape() {
+export function scheduleScrape() {
     const config = getConfig().scrape;
     const cronSchedule = config.cron;
     const runOnAppStart = config.runOnAppStart;
@@ -92,17 +92,21 @@ export async function scheduleScrape() {
     }
 
     const runScrape = async () => {
-        if (scraperState.status === 'idle') {
-            await scrape();
-        } else {
-            logger.warn(
-                'Pominięto wykonanie zadania z harmonogramu - pobieranie danych nadal trwa!'
-            );
+        try {
+            if (scraperState.status === 'idle') {
+                await scrape();
+            } else {
+                logger.warn(
+                    'Pominięto wykonanie zadania z harmonogramu - pobieranie danych nadal trwa!'
+                );
+            }
+        } catch (e) {
+            logger.error(e);
         }
     };
 
     if (runOnAppStart) {
-        await runScrape();
+        runScrape();
     }
 
     if (scheduleOnAppStart) {
