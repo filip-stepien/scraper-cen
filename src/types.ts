@@ -149,6 +149,13 @@ export type EventListener = {
     events?: AppEvents;
 };
 
+export type ComparisionOperator = '<' | '>' | '<=' | '>=' | '=';
+
+export type Comparison = {
+    operator: ComparisionOperator;
+    value: number;
+};
+
 export type Config = {
     website: {
         port: number;
@@ -162,6 +169,9 @@ export type Config = {
             cookieName: string;
             durationSeconds: number;
         };
+    };
+    data: {
+        productLookbackHours: number;
     };
     scrape: {
         cron: '0 0 * * *';

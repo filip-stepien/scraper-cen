@@ -15,9 +15,12 @@
         "fileName": "products.db",
         "maxPricesCount": 10
     },
+    "data": {
+        "productLookbackHours": 48
+    },
     "scrape": {
         "cron": "0 */6 * * *",
-        "runOnAppStart": true,
+        "runOnAppStart": false,
         "scheduleOnAppStart": false
     },
     "companies": {

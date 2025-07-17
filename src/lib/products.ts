@@ -1,4 +1,17 @@
-import { eq, and, sql, asc, AnyColumn, desc, SQL, like } from 'drizzle-orm';
+import {
+    eq,
+    and,
+    sql,
+    asc,
+    AnyColumn,
+    desc,
+    SQL,
+    like,
+    gt,
+    gte,
+    lt,
+    lte
+} from 'drizzle-orm';
 import { pricesTable, productsTable } from '../db/schema';
 import { db } from '../db';
 import { findCompanyByName } from './companies';
@@ -11,9 +24,24 @@ import {
     Product,
     ProductWithPrices,
     ProductStatus,
-    RequestParamEntry
+    RequestParamEntry,
+    Comparison,
+    ComparisionOperator
 } from '../types';
 import dayjs from 'dayjs';
+import { getConfig } from './config';
+
+export function getValidSortingFields() {
+    return ['name', 'ean', 'category', 'changedAt', 'price'];
+}
+
+export function getValidFilteringFields() {
+    return ['name', 'ean', 'category', 'changedAt', 'price'];
+}
+
+export function getDateComparableFilteringFields() {
+    return ['changedAt'];
+}
 
 export async function saveProduct(product: Product): Promise<ProductStatus> {
     const { ean, name, category, imageUrl, companyId, url } = product;
@@ -100,17 +128,9 @@ export async function countProductsByCompany(
     return Number(result?.count ?? 0);
 }
 
-export function getValidSortingFields() {
-    return ['name', 'ean', 'category', 'changedAt', 'price'];
-}
-
-export function getValidFilteringFields() {
-    return ['name', 'ean', 'category', 'changedAt', 'price'];
-}
-
 function parseProductParam(
     paramStr?: string,
-    shouldParse?: (key: string) => boolean,
+    shouldParse?: (key: string, value: string) => boolean,
     valueTransform?: (value: string) => string
 ): RequestParamEntry[] | null {
     if (!paramStr) {
@@ -128,7 +148,7 @@ function parseProductParam(
                 return null;
             }
 
-            const keyParsed = shouldParse?.(keyRaw);
+            const keyParsed = shouldParse?.(keyRaw, valueRaw);
 
             if (!keyParsed) {
                 return null;
@@ -143,6 +163,22 @@ function parseProductParam(
         .filter((sort): sort is RequestParamEntry => Boolean(sort));
 
     return sortingOptions.length >= 1 ? sortingOptions : null;
+}
+
+function parseComparison(raw: string): Comparison | null {
+    const operators = ['<=', '>=', '<', '>', '='] as const;
+
+    for (const op of operators) {
+        if (raw.startsWith(op)) {
+            const rest = raw.slice(op.length).trim();
+            const num = Number(rest);
+            if (!isNaN(num)) {
+                return { operator: op, value: num };
+            }
+        }
+    }
+
+    return null;
 }
 
 export async function findProductsByCompany(
@@ -233,9 +269,37 @@ export async function findProductsByCompany(
 
     let filteringWhereExpressions: SQL[] = [];
     if (filtering) {
+        const getOperatorFn = (
+            operator: ComparisionOperator,
+            column: AnyColumn,
+            value: number | Date
+        ) => {
+            const operators = {
+                '<': lt(column, value),
+                '<=': lte(column, value),
+                '>': gt(column, value),
+                '>=': gte(column, value),
+                '=': eq(column, value)
+            };
+            return operators[operator] ?? null;
+        };
+
         filteringWhereExpressions = filtering.map(({ key, value }) => {
             const column = partialProductsFields[key] as AnyColumn;
-            return like(column, `%${value}%`);
+            const parsed = parseComparison(value);
+
+            if (parsed) {
+                const { operator, value: num } = parsed;
+                const typedValue = getDateComparableFilteringFields().includes(
+                    key
+                )
+                    ? dayjs.unix(num).toDate()
+                    : num;
+
+                return getOperatorFn(operator, column, typedValue);
+            } else {
+                return like(column, `%${value}%`);
+            }
         });
     }
 
@@ -243,14 +307,12 @@ export async function findProductsByCompany(
     if (sorting) {
         orderingExpressions = sorting
             .flatMap(({ key, value }) => {
-                if (Object.keys(partialProductsFields).includes(key)) {
-                    const column = partialProductsFields[key] as AnyColumn;
-                    const nullsLastExpr = sql`CASE WHEN ${column} IS NULL THEN 1 ELSE 0 END ASC`;
-                    const columnSortExpr =
-                        value === 'asc' ? asc(column) : desc(column);
+                const column = partialProductsFields[key] as AnyColumn;
+                const nullsLastExpr = sql`CASE WHEN ${column} IS NULL THEN 1 ELSE 0 END ASC`;
+                const columnSortExpr =
+                    value === 'asc' ? asc(column) : desc(column);
 
-                    return [nullsLastExpr, columnSortExpr];
-                }
+                return [nullsLastExpr, columnSortExpr];
             })
             .filter((expr): expr is SQL => Boolean(expr));
     }
@@ -287,7 +349,11 @@ export async function findProductsByCompany(
         sortedAndFilteredProducts.map(async product => {
             const prices = await findPricesByProductEan(product.ean);
             const changedAt = dayjs(product.changedAt).unix();
-            return { ...product, changedAt, prices };
+            return {
+                ...product,
+                changedAt,
+                prices
+            };
         })
     );
 
