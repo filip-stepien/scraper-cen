@@ -50,6 +50,12 @@ Uruchom aplikację:
 npm start
 ```
 
+Aplikacja zostanie domyślnie uruchomiona na porcie `3000`. Interfejs użytkownika będzie wówczas dostępny pod adresem `http://localhost:3000`.
+
+Domyślne dane logowania do panelu:
+-  Login: `admin`
+-  Hasło: `admin`
+
 ## 🛠️ Konfiguracja
 
 Aplikacja jest konfigurowalna za pomocą pliku `config.json`.
