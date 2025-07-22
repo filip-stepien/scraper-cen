@@ -38,23 +38,39 @@ Obecnie obsługiwane sklepy (_WIP_):
 
 ## ⚙️ Instalacja i uruchomienie
 
-Zainstaluj zależności:
+### Lokalna instalacja i uruchomienie aplikacji
 
-```bash
-npm install
-```
+1. Zainstaluj zależności:
 
-Uruchom aplikację:
+    ```bash
+    npm install
+    ```
 
-```bash
-npm start
-```
+2. Uruchom aplikację:
 
-Aplikacja zostanie domyślnie uruchomiona na porcie `3000`. Interfejs użytkownika będzie wówczas dostępny pod adresem `http://localhost:3000`.
+    ```bash
+    npm start
+    ```
 
-Domyślne dane logowania do panelu:
--  Login: `admin`
--  Hasło: `admin`
+Aplikacja domyślnie uruchomi się na porcie `3000`.
+
+### Webowy interfejs
+
+Najłatwiej pobrać gotową wersję aplikacji wraz ze zbudowanym frontendem z sekcji [Releases](https://github.com/filip-stepien/scraper-cen/releases).
+
+Alternatywnie możesz:
+
+1. Przejść do [repozytorium frontendu](https://github.com/filip-stepien/scraper-cen-frontend).
+
+2. Pobrać i zbudować frontend - pliki wynikowe pojawią się w katalogu `dist`.
+
+3. Skopiować zawartość katalogu `dist` do folderu `public` w tym repozytorium.
+
+Intefejs jest domyślnie uruchamiany pod adresem `http://localhost:3000`.
+
+### Domyślne dane logowania do panelu
+
+-   Hasło: `admin`
 
 ## 🛠️ Konfiguracja
 
