@@ -13,6 +13,11 @@ Obecnie obsługiwane sklepy (_WIP_):
 -   Responsywny webowy interfejs do prezentacji danych
 -   Możliwość łatwej rozbudowy o inne sklepy
 
+## 📸 Podgląd interfejsu
+
+![Wersja mobilna](example/mobile.png)
+![Wersja desktop](example/desktop.png)
+
 ## 🚀 Technologie
 
 ### Frontend
