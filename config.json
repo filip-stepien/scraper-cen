@@ -21,7 +21,7 @@
     "scrape": {
         "cron": "0 */6 * * *",
         "runOnAppStart": false,
-        "scheduleOnAppStart": false
+        "scheduleOnAppStart": true
     },
     "companies": {
         "castorama": {
