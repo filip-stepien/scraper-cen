@@ -24,17 +24,17 @@ Obecnie obsługiwane sklepy (_WIP_):
 
 [Repozytorium z frontendem](https://github.com/filip-stepien/scraper-cen-frontend)
 
--   **React** – interfejs użytkownika
--   **Komponenty Ant Design** – gotowe komponenty UI
--   **Tailwind CSS** – stylowanie interfejsu
+-   **React** - interfejs użytkownika
+-   **Komponenty Ant Design** - gotowe komponenty UI
+-   **Tailwind CSS** - stylowanie interfejsu
 
 ### Backend
 
--   **Node.js + Express.js** – API obsługujące logikę aplikacji
--   **node-cron** – automatyczne scrapowanie danych w określonych interwałach czasowych
--   **SQLite** – baza do przechowywania cen i produktów
--   **Drizzle ORM** – komunikacja z bazą danych
--   **JWT** – autoryzacja oparta na tokenach
+-   **Node.js + Express.js** - API obsługujące logikę aplikacji
+-   **node-cron** - automatyczne scrapowanie danych w określonych interwałach czasowych
+-   **SQLite** - baza do przechowywania cen i produktów
+-   **Drizzle ORM** - komunikacja z bazą danych
+-   **JWT** - autoryzacja oparta na tokenach
 
 ## ⚙️ Instalacja i uruchomienie
 
@@ -56,7 +56,7 @@ Aplikacja domyślnie uruchomi się na porcie `3000`.
 
 ### Webowy interfejs
 
-Najłatwiej pobrać gotową wersję aplikacji wraz ze zbudowanym frontendem z sekcji [Releases](https://github.com/filip-stepien/scraper-cen/releases).
+Najłatwiej pobrać gotową wersję aplikacji wraz ze zbudowanym frontendem ze strony [Releases](https://github.com/filip-stepien/scraper-cen/releases) i powtórzyć kroki z poprzedniej sekcji (_Lokalna instalacja i uruchomienie aplikacji_).
 
 Alternatywnie możesz:
 
@@ -65,6 +65,9 @@ Alternatywnie możesz:
 2. Pobrać i zbudować frontend - pliki wynikowe pojawią się w katalogu `dist`.
 
 3. Skopiować zawartość katalogu `dist` do folderu `public` w tym repozytorium.
+
+> [!NOTE]
+> Kroki te są wymagane, jeżeli chcesz uruchomić backend na innym porcie niż domyślny `3000`, ponieważ po zbudowaniu frontendu nie ma już możliwości modyfikowania jego zmiennych środowiskowych. Szczegóły dotyczące zmiany adresu serwera używanego przez frontend znajdują się w dokumentacji [repozytorium frontendu](https://github.com/filip-stepien/scraper-cen-frontend).
 
 Intefejs jest domyślnie uruchamiany pod adresem `http://localhost:3000`.
 
@@ -78,29 +81,29 @@ Aplikacja jest konfigurowalna za pomocą pliku `config.json`.
 
 `website` - ustawienia panelu użytkownika:
 
--   `port` – numer portu, na którym działa aplikacja
--   `authorization` – konfiguracja autoryzacji dostępu:
+-   `port` - numer portu, na którym działa aplikacja
+-   `authorization` - konfiguracja autoryzacji dostępu:
     -   `enabled` - czy wymagać logowania
-    -   `passwordHash` – zahashowane hasło, używane do logowania
--   `session` – ustawienia sesji użytkownika:
-    -   `secret` – sekret do podpisywania ciasteczek sesji
-    -   `cookieName` – nazwa ciasteczka przechowującego identyfikator sesji
-    -   `durationSeconds` – czas życia sesji w sekundach
+    -   `passwordHash` - zahashowane hasło, używane do logowania
+-   `session` - ustawienia sesji użytkownika:
+    -   `secret` - sekret do podpisywania ciasteczek sesji
+    -   `cookieName` - nazwa ciasteczka przechowującego identyfikator sesji
+    -   `durationSeconds` - czas życia sesji w sekundach
 
 `db` - ustawienia bazy danych:
 
--   `fileName` – nazwa pliku bazy danych SQLite
--   `maxPricesCount` – maksymalna liczba zapisanych cen dla jednego produktu
+-   `fileName` - nazwa pliku bazy danych SQLite
+-   `maxPricesCount` - maksymalna liczba zapisanych cen dla jednego produktu
 
 `data` - ustawienia dotyczące danych:
 
--   `productLookbackHours` – ile godzin wstecz produkty i ceny uznawane są za _nowo dodane_
+-   `productLookbackHours` - ile godzin wstecz produkty i ceny uznawane są za _nowo dodane_
 
 `scrape` - ustawienia scrapowania:
 
--   `cron` – [wyrażenie cron](https://en.wikipedia.org/wiki/Cron) definiujące harmonogram automatycznego scrapowania
--   `runOnAppStart` – czy scrapowanie ma się uruchamiać od razu po starcie aplikacji
--   `scheduleOnAppStart` – czy zaplanować zadanie cron od razu po starcie aplikacji
+-   `cron` - [wyrażenie cron](https://en.wikipedia.org/wiki/Cron) definiujące harmonogram automatycznego scrapowania
+-   `runOnAppStart` - czy scrapowanie ma się uruchamiać od razu po starcie aplikacji
+-   `scheduleOnAppStart` - czy zaplanować zadanie cron od razu po starcie aplikacji
 
 `companies` - konfiguracja scraperów konkretnych stron
 
